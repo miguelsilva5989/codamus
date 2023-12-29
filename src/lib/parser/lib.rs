@@ -7,15 +7,15 @@ use nom::{
     character::complete::{alpha1, alphanumeric1, multispace0},
     combinator::recognize,
     multi::{many0_count, many1},
-    sequence::{pair, tuple, delimited},
+    sequence::{pair, tuple},
     IResult,
 };
 
-use lexer::{NodeType, Assign, Token, TokenType, CallExpression};
+use lexer::{NodeType, Assign, Token, TokenType, CallExpression, BinaryExpression};
 
 #[derive(Debug)]
 pub struct Program<'a> {
-    body: Vec<NodeType<'a>>,
+    pub body: Vec<NodeType<'a>>,
 }
 
 fn get_identifier(input: &str) -> IResult<&str, &str> {
@@ -56,7 +56,7 @@ fn parse_call_expression(input: &str) -> IResult<&str, NodeType> {
         multispace0,
     ))(input)?;
 
-    Ok((input, NodeType::CallExpression(CallExpression {func, args: args.trim().split(",").collect()})))
+    Ok((input, NodeType::CallExpression(CallExpression {func, args: args.trim().split(",").into_iter().map(|x| x.trim()).collect()})))
 }
 
 fn parse_program(input: &str) -> IResult<&str, Vec<NodeType>> {
@@ -65,6 +65,26 @@ fn parse_program(input: &str) -> IResult<&str, Vec<NodeType>> {
     let statements: Vec<NodeType> = program;
 
     Ok((input, statements))
+}
+
+fn parse_additive_expression(tokens: Vec<Token>) -> BinaryExpression {
+
+    let mut left = parse_primary_expression();
+
+    let mut iter = tokens.iter();
+    while let Some(token) = iter.next() {
+        if token.value == "+" || token.value == "-" {
+            let operator = token.value;
+            iter.next();
+            let right = parse_primary_expression();
+
+            left = BinaryExpression {left, right, operator};
+        
+        }
+    }
+
+    return left;
+
 }
 
 fn tokenzine(input: &str) -> Vec<Token> {
@@ -114,10 +134,6 @@ pub fn parse_ast(input: &str) -> IResult<&str, Program> {
     let (input, statements) = parse_program(input)?;
 
     let program = Program { body: statements };
-
-    program.body.iter().for_each(|st| {
-        
-    });
 
     Ok((input, program))
 }

@@ -30,23 +30,23 @@ pub struct Assign<'a> {
 
 #[derive(Debug)]
 pub enum NodeType<'a> {
-    Identifier(Identifier),
-    NumericLiteral(NumericLiteral),
+    // Identifier(Identifier),
+    // NumericLiteral(NumericLiteral),
     Assign(Assign<'a>),
     BinaryExpression(BinaryExpression),
     CallExpression(CallExpression<'a>),
-    UnaryExpression,
-    FunctionDeclaration,
+    // UnaryExpression,
+    // FunctionDeclaration,
 }
 
 #[derive(Debug)]
 struct Expression {}
 
 #[derive(Debug)]
-struct BinaryExpression {
-    left: Expression,
-    right: Expression,
-    operator: String,
+pub struct BinaryExpression {
+    pub left: Expression,
+    pub right: Expression,
+    pub operator: String,
 }
 
 #[derive(Debug)]
@@ -55,13 +55,13 @@ pub struct CallExpression<'a> {
     pub args: Vec<&'a str>
 }
 
-#[derive(Debug)]
-struct Identifier {
-    id: String,
-}
+// #[derive(Debug)]
+// struct Identifier {
+//     id: String,
+// }
 
-#[derive(Debug)]
-struct NumericLiteral {
-    value: usize,
-}
+// #[derive(Debug)]
+// struct NumericLiteral {
+//     value: usize,
+// }
 

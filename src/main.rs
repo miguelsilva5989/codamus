@@ -1,9 +1,17 @@
-
 use parser;
 
 fn main() {
     let input = include_str!("sample.c420");
 
-    let tt = parser::parse_ast(input);
-    println!("{:?}", tt);
+    let program = parser::parse_ast(input);
+    println!("{:?}", program);
+
+    match program {
+        Ok((rem, program)) => {
+            program.body.iter().for_each(|st| {
+
+            });
+        },
+        Err(err) => panic!("oh no: {:?}", err)
+    }
 }
