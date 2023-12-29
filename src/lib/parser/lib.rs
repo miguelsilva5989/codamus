@@ -10,9 +10,10 @@ use nom::{
 
 mod generic;
 
+// const RESERVED: [&str; 1] = ["let"];
+
 #[derive(Debug, PartialEq)]
 enum TokenType {
-    Space,
     Number,
     Identifier,
     OpenParen,
@@ -90,7 +91,9 @@ fn tokenzine(input: &str) -> Vec<Token> {
             ')' => tokens.push(Token::new(ch.into(), TokenType::CloseParen)),
             '+' | '-' | '*' | '/' => tokens.push(Token::new(ch.into(), TokenType::BinaryOperator)),
             _ => {
-                if ch.is_numeric() {
+                if ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t' {
+                    // ignore whitespaces
+                } else if ch.is_numeric() {
                     let mut num: String = ch.into();
                     while let Some(next) = iter.peek() {
                         if next.is_numeric() {
@@ -100,7 +103,6 @@ fn tokenzine(input: &str) -> Vec<Token> {
                         }
                     }
                     tokens.push(Token::new(num, TokenType::Number));
-                } else if ch == ' ' {
                 } else if ch.is_alphabetic() {
                     let mut id: String = ch.into();
                     while let Some(next) = iter.peek() {
@@ -110,12 +112,13 @@ fn tokenzine(input: &str) -> Vec<Token> {
                             break;
                         }
                     }
+
                     tokens.push(Token::new(id, TokenType::Identifier));
                 } else {
                     panic!("Token '{}' is not yet implemented", ch);
                 }
             }
-        }   
+        }
     }
 
     tokens
