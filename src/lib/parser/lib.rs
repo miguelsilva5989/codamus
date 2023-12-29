@@ -22,6 +22,30 @@ fn get_identifier(input: &str) -> IResult<&str, &str> {
     recognize(pair(alt((alpha1, tag("_"))), many0_count(alt((alphanumeric1, tag("_"))))))(input)
 }
 
+fn take_until_closing_bracket(opening_bracket: &str, closing_bracket: &str, tokens: &mut Vec<Token>) -> Vec<Token> {
+    let mut close_pos = 0;
+    let mut counter = 1;
+    while counter > 0 {
+        if let Some(c) = tokens.get(close_pos) {
+            if c.value == opening_bracket {
+                counter += 1;
+            } else if c.value == closing_bracket {
+                counter -= 1;
+            }
+            close_pos += 1;
+        } else {
+            break;
+        }
+    }
+
+    if tokens.get(close_pos - 1).unwrap().value != closing_bracket {
+        panic!("Expected closing bracked '{}' but not found in '{:?}'", closing_bracket, tokens);
+    }
+
+    // println!("{:?}", tokens[1..close_pos-1].to_vec());
+    return tokens[1..close_pos - 1].to_vec();
+}
+
 fn parse_primary_expression<'a>(tokens: &mut Vec<Token>) -> Option<Expression<'a>> {
     if let Some(token) = tokens.get(0) {
         match token.r#type {
@@ -39,6 +63,12 @@ fn parse_primary_expression<'a>(tokens: &mut Vec<Token>) -> Option<Expression<'a
                 }));
                 tokens.remove(0);
                 return expr;
+            }
+            TokenType::OpenParen => {
+                let mut paren_tokens = take_until_closing_bracket("(", ")", tokens);
+                // println!("{:?}", paren_tokens);
+
+                return Some(parse_expression(&mut paren_tokens));
             }
             _ => panic!("Unexpected token while parsing primary expression '{:?}'", token),
         }
@@ -60,7 +90,7 @@ fn parse_multiplicative_expression<'a>(tokens: &mut Vec<Token>) -> Expression<'a
                 right: Box::new(right.unwrap()),
                 operator,
             }));
-        } 
+        }
     }
 
     return left.unwrap();

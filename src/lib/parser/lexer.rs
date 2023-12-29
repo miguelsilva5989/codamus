@@ -1,7 +1,7 @@
 
 // const RESERVED: [&str; 1] = ["let"];
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum TokenType {
     Number,
     Identifier,
@@ -10,7 +10,7 @@ pub enum TokenType {
     BinaryOperator,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub value: String,
     pub r#type: TokenType,
