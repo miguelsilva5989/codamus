@@ -3,15 +3,15 @@ mod lexer;
 
 use nom::{
     branch::alt,
-    bytes::complete::{tag, take_until1},
+    bytes::complete::{tag, take_until1, take_until},
     character::complete::{alpha1, alphanumeric1, multispace0},
     combinator::recognize,
     multi::{many0_count, many1},
-    sequence::{pair, tuple},
+    sequence::{pair, tuple, delimited},
     IResult,
 };
 
-use lexer::{NodeType, Assign, Token, TokenType};
+use lexer::{NodeType, Assign, Token, TokenType, CallExpression};
 
 #[derive(Debug)]
 pub struct Program<'a> {
@@ -42,8 +42,25 @@ fn parse_assign(input: &str) -> IResult<&str, NodeType> {
     Ok((input, NodeType::Assign(Assign { id, tokens })))
 }
 
+fn parse_call_expression(input: &str) -> IResult<&str, NodeType> {
+    let (input, (_, func, _, _, _, args, _, _, _, _)) = tuple((
+        multispace0,
+        tag("print"),
+        multispace0,
+        tag("("),
+        multispace0,
+        take_until(")"),
+        tag(")"),
+        multispace0,
+        tag(";"),
+        multispace0,
+    ))(input)?;
+
+    Ok((input, NodeType::CallExpression(CallExpression {func, args: args.trim().split(",").collect()})))
+}
+
 fn parse_program(input: &str) -> IResult<&str, Vec<NodeType>> {
-    let (input, program) = many1(parse_assign)(input)?;
+    let (input, program) = many1(alt((parse_assign, parse_call_expression)))(input)?;
 
     let statements: Vec<NodeType> = program;
 

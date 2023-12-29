@@ -34,7 +34,7 @@ pub enum NodeType<'a> {
     NumericLiteral(NumericLiteral),
     Assign(Assign<'a>),
     BinaryExpression(BinaryExpression),
-    CallExpression,
+    CallExpression(CallExpression<'a>),
     UnaryExpression,
     FunctionDeclaration,
 }
@@ -47,6 +47,12 @@ struct BinaryExpression {
     left: Expression,
     right: Expression,
     operator: String,
+}
+
+#[derive(Debug)]
+pub struct CallExpression<'a> {
+    pub func: &'a str,
+    pub args: Vec<&'a str>
 }
 
 #[derive(Debug)]
