@@ -25,27 +25,29 @@ impl Token {
 #[derive(Debug)]
 pub struct Assign<'a> {
     pub id: &'a str,
-    pub tokens: Vec<Token>,
+    // pub tokens: Vec<Token>,
+    pub expression: Box<Expression<'a>>
 }
 
 #[derive(Debug)]
-pub enum NodeType<'a> {
-    // Identifier(Identifier),
-    // NumericLiteral(NumericLiteral),
+pub enum Expression<'a> {
+    Comment(String),
+    Identifier(Identifier),
+    NumericLiteral(NumericLiteral),
     Assign(Assign<'a>),
-    BinaryExpression(BinaryExpression),
+    BinaryExpression(BinaryExpression<'a>),
     CallExpression(CallExpression<'a>),
     // UnaryExpression,
     // FunctionDeclaration,
 }
 
-#[derive(Debug)]
-struct Expression {}
+// #[derive(Debug)]
+// struct Expression {}
 
 #[derive(Debug)]
-pub struct BinaryExpression {
-    pub left: Expression,
-    pub right: Expression,
+pub struct BinaryExpression<'a> {
+    pub left: Box<Expression<'a>>,
+    pub right: Box<Expression<'a>>,
     pub operator: String,
 }
 
@@ -55,13 +57,13 @@ pub struct CallExpression<'a> {
     pub args: Vec<&'a str>
 }
 
-// #[derive(Debug)]
-// struct Identifier {
-//     id: String,
-// }
+#[derive(Debug)]
+pub struct Identifier {
+    pub id: String,
+}
 
-// #[derive(Debug)]
-// struct NumericLiteral {
-//     value: usize,
-// }
+#[derive(Debug)]
+pub struct NumericLiteral {
+    pub value: usize,
+}
 

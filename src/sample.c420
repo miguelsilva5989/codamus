@@ -3,6 +3,6 @@ let asd = 10 + 5 - 5;
 let foo = 1;
 let bar_ze = 2;
 
-let x = 420 + (foo * bar_ze);
+// let x = 420 + (foo * bar_ze);
 
 print(x);
