@@ -60,9 +60,7 @@ fn parse_multiplicative_expression<'a>(tokens: &mut Vec<Token>) -> Expression<'a
                 right: Box::new(right.unwrap()),
                 operator,
             }));
-        } else {
-            panic!("Unexpected token while parsing additive expression '{:?}'", token)
-        }
+        } 
     }
 
     return left.unwrap();
@@ -82,8 +80,6 @@ fn parse_additive_expression<'a>(tokens: &mut Vec<Token>) -> Expression<'a> {
                 right: Box::new(right),
                 operator,
             });
-        } else {
-            panic!("Unexpected token while parsing additive expression '{:?}'", token)
         }
     }
 
