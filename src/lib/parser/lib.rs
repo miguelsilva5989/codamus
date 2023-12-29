@@ -10,14 +10,14 @@ use nom::{
 
 mod generic;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum TokenType {
+    Space,
     Number,
     Identifier,
     OpenParen,
     CloseParen,
     BinaryOperator,
-    Let,
 }
 
 #[derive(Debug)]
@@ -81,12 +81,43 @@ fn parse_statements(input: &str) -> IResult<&str, Vec<Statement>> {
 }
 
 fn tokenzine(input: &str) -> Vec<Token> {
-    input.chars().into_iter().map(|x| match x {
-        '(' => Token::new(x.into(), TokenType::OpenParen),
-        ')' => Token::new(x.into(), TokenType::CloseParen),
-        '+' | '-' | '*' | '/' => Token::new(x.into(), TokenType::BinaryOperator),
-        _ => panic!("Token '{}' is not yet implemented", x),
-    }).collect()
+    let mut iter = input.chars().into_iter().peekable();
+
+    iter.clone()
+        .map(|x| match x {
+            '(' => Token::new(x.into(), TokenType::OpenParen),
+            ')' => Token::new(x.into(), TokenType::CloseParen),
+            '+' | '-' | '*' | '/' => Token::new(x.into(), TokenType::BinaryOperator),
+            _ => {
+                if x.is_numeric() {
+                    let mut num: String = x.into();
+                    while let Some(next) = iter.peek() {
+                        if next.is_numeric() {
+                            num.push(iter.next().unwrap());
+                        } else {
+                            break;
+                        }
+                    }
+                    Token::new(num, TokenType::Number)
+                } else if x == ' ' {
+                    Token::new(" ".to_owned(), TokenType::Space)
+                } else if x.is_alphabetic() || x == '_' {
+                    let mut id: String = x.into();
+                    while let Some(next) = iter.peek() {
+                        if next.is_alphanumeric() || next == &'_' {
+                            id.push(iter.next().unwrap());
+                        } else {
+                            break;
+                        }
+                    }
+                    Token::new(id, TokenType::Identifier)
+                } else {
+                    panic!("Token '{}' is not yet implemented", x);
+                }
+            }
+        })
+        .filter(|x| x.r#type != TokenType::Space)
+        .collect()
 }
 
 pub fn parse_dsl(input: &str) -> IResult<&str, Dsl> {
