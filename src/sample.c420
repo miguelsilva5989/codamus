@@ -3,6 +3,9 @@ let asd = 10 + 5 - 5;
 let foo = 1;
 let bar_ze = 2;
 
+let sum_test = 10 - foo + bar_ze;
+let mul_test = 10 + 5 * 3;
+
 // let x = 420 + (foo * bar_ze);
 
 print(x);

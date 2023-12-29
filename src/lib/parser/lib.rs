@@ -22,48 +22,76 @@ fn get_identifier(input: &str) -> IResult<&str, &str> {
     recognize(pair(alt((alpha1, tag("_"))), many0_count(alt((alphanumeric1, tag("_"))))))(input)
 }
 
-fn parse_additive_expression<'a>(tokens: &Vec<Token>) -> Expression<'a> {
-    let mut iter = tokens.into_iter();
+fn parse_primary_expression<'a>(tokens: &mut Vec<Token>) -> Option<Expression<'a>> {
+    if let Some(token) = tokens.get(0) {
+        match token.r#type {
+            TokenType::Identifier => {
+                let expr = Some(Expression::Identifier(Identifier { id: token.value.clone() }));
+                tokens.remove(0);
+                return expr;
+            }
+            TokenType::Number => {
+                let expr = Some(Expression::NumericLiteral(NumericLiteral {
+                    value: token
+                        .value
+                        .parse::<usize>()
+                        .expect(format!("Unexpected number {}", token.value).as_str()),
+                }));
+                tokens.remove(0);
+                return expr;
+            }
+            _ => panic!("Unexpected token while parsing primary expression '{:?}'", token),
+        }
+    }
+    None
+}
 
-    let mut left = parse_primary_expression(iter.next());
+fn parse_multiplicative_expression<'a>(tokens: &mut Vec<Token>) -> Expression<'a> {
+    let mut left = parse_primary_expression(tokens);
 
-    while let Some(token) = iter.next() {
-        if token.value == "+" || token.value == "-" {
+    if let Some(token) = tokens.get(0) {
+        if token.value == "/" || token.value == "*" || token.value == "%" {
             let operator = token.value.clone();
-            let right = parse_primary_expression(iter.next());
+            tokens.remove(0);
+            let right = parse_primary_expression(tokens);
 
             left = Some(Expression::BinaryExpression(BinaryExpression {
                 left: Box::new(left.unwrap()),
                 right: Box::new(right.unwrap()),
                 operator,
             }));
+        } else {
+            panic!("Unexpected token while parsing additive expression '{:?}'", token)
         }
     }
 
     return left.unwrap();
 }
 
-fn parse_expression<'a>(tokens: &Vec<Token>) -> Expression<'a> {
-    return parse_additive_expression(tokens);
-}
+fn parse_additive_expression<'a>(tokens: &mut Vec<Token>) -> Expression<'a> {
+    let mut left = parse_multiplicative_expression(tokens);
 
-fn parse_primary_expression<'a>(token: Option<&Token>) -> Option<Expression<'a>> {
-    if let Some(token) = token {
-        println!("token {:?}", token);
-        match token.r#type {
-            TokenType::Identifier => return Some(Expression::Identifier(Identifier { id: token.value.clone() })),
-            TokenType::Number => {
-                return Some(Expression::NumericLiteral(NumericLiteral {
-                    value: token
-                        .value
-                        .parse::<usize>()
-                        .expect(format!("Unexpected number {}", token.value).as_str()),
-                }))
-            }
-            _ => todo!("Unexpected token while parsing primary expression '{:?}'", token),
+    if let Some(token) = tokens.get(0) {
+        if token.value == "+" || token.value == "-" {
+            let operator = token.value.clone();
+            tokens.remove(0);
+            let right = parse_multiplicative_expression(tokens);
+
+            left = Expression::BinaryExpression(BinaryExpression {
+                left: Box::new(left),
+                right: Box::new(right),
+                operator,
+            });
+        } else {
+            panic!("Unexpected token while parsing additive expression '{:?}'", token)
         }
     }
-    None
+
+    return left;
+}
+
+fn parse_expression<'a>(tokens: &mut Vec<Token>) -> Expression<'a> {
+    return parse_additive_expression(tokens);
 }
 
 fn tokenzine(input: &str) -> Vec<Token> {
@@ -74,7 +102,7 @@ fn tokenzine(input: &str) -> Vec<Token> {
         match ch {
             '(' => tokens.push(Token::new(ch.into(), TokenType::OpenParen)),
             ')' => tokens.push(Token::new(ch.into(), TokenType::CloseParen)),
-            '+' | '-' | '*' | '/' => tokens.push(Token::new(ch.into(), TokenType::BinaryOperator)),
+            '+' | '-' | '*' | '/' | '%' => tokens.push(Token::new(ch.into(), TokenType::BinaryOperator)),
             _ => {
                 if ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t' {
                     // ignore whitespaces
@@ -124,9 +152,9 @@ fn parse_assign(input: &str) -> IResult<&str, Expression> {
         multispace0,
     ))(input)?;
 
-    let tokens = tokenzine(assign);
+    let mut tokens = tokenzine(assign);
 
-    let expression = parse_expression(&tokens);
+    let expression = parse_expression(&mut tokens);
 
     Ok((
         input,
