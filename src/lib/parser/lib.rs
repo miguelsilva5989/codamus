@@ -1,5 +1,6 @@
-mod generic;
+// mod generic;
 mod lexer;
+mod ast;
 
 use nom::{
     branch::alt,
@@ -11,7 +12,8 @@ use nom::{
     IResult,
 };
 
-use lexer::{Assign, BinaryExpression, CallExpression, Expression, Identifier, NumericLiteral, Token, TokenType};
+use lexer::{Token, TokenType};
+use ast::{Assign, BinaryExpression, CallExpression, Expression, Identifier, NumericLiteral};
 
 #[derive(Debug)]
 pub struct Program<'a> {
@@ -53,6 +55,10 @@ fn parse_primary_expression<'a>(tokens: &mut Vec<Token>) -> Option<Expression<'a
                 let expr = Some(Expression::Identifier(Identifier { id: token.value.clone() }));
                 tokens.remove(0);
                 return expr;
+            }
+            TokenType::None => {
+                tokens.remove(0);
+                return Some(Expression::NoneLiteral);
             }
             TokenType::Number => {
                 let expr = Some(Expression::NumericLiteral(NumericLiteral {
@@ -120,49 +126,6 @@ fn parse_expression<'a>(tokens: &mut Vec<Token>) -> Expression<'a> {
     return parse_additive_expression(tokens);
 }
 
-fn tokenzine(input: &str) -> Vec<Token> {
-    let mut tokens: Vec<Token> = Vec::new();
-    let mut iter = input.chars().into_iter().peekable();
-
-    while let Some(ch) = iter.next() {
-        match ch {
-            '(' => tokens.push(Token::new(ch.into(), TokenType::OpenParen)),
-            ')' => tokens.push(Token::new(ch.into(), TokenType::CloseParen)),
-            '+' | '-' | '*' | '/' | '%' => tokens.push(Token::new(ch.into(), TokenType::BinaryOperator)),
-            _ => {
-                if ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t' {
-                    // ignore whitespaces
-                } else if ch.is_numeric() {
-                    let mut num: String = ch.into();
-                    while let Some(next) = iter.peek() {
-                        if next.is_numeric() {
-                            num.push(iter.next().unwrap());
-                        } else {
-                            break;
-                        }
-                    }
-                    tokens.push(Token::new(num, TokenType::Number));
-                } else if ch.is_alphabetic() {
-                    let mut id: String = ch.into();
-                    while let Some(next) = iter.peek() {
-                        if next.is_alphanumeric() || next == &'_' {
-                            id.push(iter.next().unwrap());
-                        } else {
-                            break;
-                        }
-                    }
-
-                    tokens.push(Token::new(id, TokenType::Identifier));
-                } else {
-                    panic!("Token '{}' is not yet implemented", ch);
-                }
-            }
-        }
-    }
-
-    tokens
-}
-
 fn parse_assign(input: &str) -> IResult<&str, Expression> {
     let (input, (_, _, _, id, _, _, _, assign, _, _, _)) = tuple((
         multispace0,
@@ -178,7 +141,7 @@ fn parse_assign(input: &str) -> IResult<&str, Expression> {
         multispace0,
     ))(input)?;
 
-    let mut tokens = tokenzine(assign);
+    let mut tokens = lexer::tokenzine(assign);
 
     let expression = parse_expression(&mut tokens);
 
