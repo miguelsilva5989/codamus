@@ -81,16 +81,17 @@ fn parse_statements(input: &str) -> IResult<&str, Vec<Statement>> {
 }
 
 fn tokenzine(input: &str) -> Vec<Token> {
+    let mut tokens: Vec<Token> = Vec::new();
     let mut iter = input.chars().into_iter().peekable();
 
-    iter.clone()
-        .map(|x| match x {
-            '(' => Token::new(x.into(), TokenType::OpenParen),
-            ')' => Token::new(x.into(), TokenType::CloseParen),
-            '+' | '-' | '*' | '/' => Token::new(x.into(), TokenType::BinaryOperator),
+    while let Some(ch) = iter.next() {
+        match ch {
+            '(' => tokens.push(Token::new(ch.into(), TokenType::OpenParen)),
+            ')' => tokens.push(Token::new(ch.into(), TokenType::CloseParen)),
+            '+' | '-' | '*' | '/' => tokens.push(Token::new(ch.into(), TokenType::BinaryOperator)),
             _ => {
-                if x.is_numeric() {
-                    let mut num: String = x.into();
+                if ch.is_numeric() {
+                    let mut num: String = ch.into();
                     while let Some(next) = iter.peek() {
                         if next.is_numeric() {
                             num.push(iter.next().unwrap());
@@ -98,11 +99,10 @@ fn tokenzine(input: &str) -> Vec<Token> {
                             break;
                         }
                     }
-                    Token::new(num, TokenType::Number)
-                } else if x == ' ' {
-                    Token::new(" ".to_owned(), TokenType::Space)
-                } else if x.is_alphabetic() || x == '_' {
-                    let mut id: String = x.into();
+                    tokens.push(Token::new(num, TokenType::Number));
+                } else if ch == ' ' {
+                } else if ch.is_alphabetic() {
+                    let mut id: String = ch.into();
                     while let Some(next) = iter.peek() {
                         if next.is_alphanumeric() || next == &'_' {
                             id.push(iter.next().unwrap());
@@ -110,14 +110,15 @@ fn tokenzine(input: &str) -> Vec<Token> {
                             break;
                         }
                     }
-                    Token::new(id, TokenType::Identifier)
+                    tokens.push(Token::new(id, TokenType::Identifier));
                 } else {
-                    panic!("Token '{}' is not yet implemented", x);
+                    panic!("Token '{}' is not yet implemented", ch);
                 }
             }
-        })
-        .filter(|x| x.r#type != TokenType::Space)
-        .collect()
+        }   
+    }
+
+    tokens
 }
 
 pub fn parse_dsl(input: &str) -> IResult<&str, Dsl> {
