@@ -1,3 +1,4 @@
+use std::marker::PhantomData;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until1},
@@ -40,20 +41,46 @@ struct Assign<'a> {
 }
 
 #[derive(Debug)]
-enum Statement<'a> {
+enum NodeType<'a> {
+    Identifier(Identifier),
+    NumericLiteral(NumericLiteral),
     Assign(Assign<'a>),
+    BinaryExpression(BinaryExpression),
+    CallExpression,
+    UnaryExpression,
+    FunctionDeclaration,
 }
 
 #[derive(Debug)]
-pub struct Dsl<'a> {
-    statements: Vec<Statement<'a>>,
+struct Expression {}
+
+#[derive(Debug)]
+struct BinaryExpression {
+    left: Expression,
+    right: Expression,
+    operator: String
+}
+
+#[derive(Debug)]
+struct Identifier {
+    id: String
+}
+
+#[derive(Debug)]
+struct NumericLiteral {
+    value: usize
+}
+
+#[derive(Debug)]
+pub struct Program<'a> {
+    statements: Vec<NodeType<'a>>,
 }
 
 fn get_identifier(input: &str) -> IResult<&str, &str> {
     recognize(pair(alt((alpha1, tag("_"))), many0_count(alt((alphanumeric1, tag("_"))))))(input)
 }
 
-fn parse_assign(input: &str) -> IResult<&str, Statement> {
+fn parse_assign(input: &str) -> IResult<&str, NodeType> {
     let (input, (_, _, id, _, _, _, assign, _, _)) = tuple((
         tag("let"),
         multispace0,
@@ -68,15 +95,15 @@ fn parse_assign(input: &str) -> IResult<&str, Statement> {
 
     let tokens = tokenzine(assign);
 
-    Ok((input, Statement::Assign(Assign { id, tokens })))
+    Ok((input, NodeType::Assign(Assign { id, tokens })))
 }
 
-fn parse_statements(input: &str) -> IResult<&str, Vec<Statement>> {
+fn parse_statements(input: &str) -> IResult<&str, Vec<NodeType>> {
     let (input, assign) = parse_assign(input)?;
 
     // let actions = Dsl::new(file, transform);
 
-    let statements: Vec<Statement> = vec![assign];
+    let statements: Vec<NodeType> = vec![assign];
 
     Ok((input, statements))
 }
@@ -124,10 +151,10 @@ fn tokenzine(input: &str) -> Vec<Token> {
     tokens
 }
 
-pub fn parse_dsl(input: &str) -> IResult<&str, Dsl> {
+pub fn parse_dsl(input: &str) -> IResult<&str, Program> {
     let (input, statements) = parse_statements(input)?;
 
-    let dsl = Dsl { statements };
+    let dsl = Program { statements };
 
     Ok((input, dsl))
 }
