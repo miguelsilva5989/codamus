@@ -67,8 +67,9 @@ pub fn evaluate_program(program: Program) -> RuntimeValue {
     let mut last_evaluated = RuntimeValue { r#type: ValueType::None };
 
     for statement in program.body {
+        println!("statement {}", statement);
         last_evaluated = evaluate(statement);
-        println!("runtime value: {:?}", last_evaluated);
+        println!("- runtime value: {:?}", last_evaluated);
     }
 
     return last_evaluated;

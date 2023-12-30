@@ -48,10 +48,13 @@ impl Div for ValueType {
     type Output = Self;
 
     fn div(self, other: Self) -> Self {
-        todo!("check division by 0");
+        let other_val = <ValueType as Into<usize>>::into(other);
+        if other_val == 0 {
+            panic!("Cannot divide by 0")
+        }
         match self {
             ValueType::None => ValueType::None,
-            ValueType::Number(x) => ValueType::Number(x / <ValueType as Into<usize>>::into(other)),
+            ValueType::Number(x) => ValueType::Number(x / other_val),
         }
     }
 }
