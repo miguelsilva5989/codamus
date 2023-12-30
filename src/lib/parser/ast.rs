@@ -49,13 +49,6 @@ pub enum Oper {
     Mod,
 }
 
-// #[derive(Debug)]
-// pub struct ArithmeticExpression<'a> {
-//     pub left: Box<Expression<'a>>,
-//     pub right: Box<Expression<'a>>,
-//     pub operator: String,
-// }
-
 pub enum ArithmeticExpression {
     Value(i64),
     Identifier(Identifier),

@@ -1,17 +1,1 @@
-// comment test
-
-10 + 5;
-10 + (5 - 2);
-
-let asd = 10 + 5 - 5;
-
-let foo = 1;
-let bar_ze = 2;
-
-let sum_test = 10 - foo + bar_ze;
-let mul_test = 10 + 5 * 3;
-let mod_test = 10 % 2 - 3;
-
-let x = 45 - 5 * (2 / bar_ze);
-
-print(x);
+10;

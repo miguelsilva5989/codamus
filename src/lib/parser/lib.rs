@@ -1,20 +1,20 @@
 mod arithmetic;
-mod ast;
+pub mod ast;
 mod generic;
 // mod lexer;
 
-use std::fmt::{self, Debug, Display, Formatter};
 use nom::{
-    branch::alt,
+    branch::{alt, permutation},
     bytes::complete::{tag, take_till, take_until},
-    character::complete::{multispace0, space0},
-    multi::many1,
-    sequence::tuple,
+    character::complete::{digit1, multispace0, space0},
+    multi::{many0, many1},
+    sequence::{delimited, tuple},
     IResult,
 };
+use std::fmt::{self, Debug, Display, Formatter};
 
 use arithmetic::parse_arithmetic_expression;
-use ast::{Assign, CallExpression, Expression};
+use ast::{Assign, CallExpression, Expression, NumericLiteral};
 // use lexer::{Token, TokenType};
 
 #[derive(Debug)]
@@ -36,6 +36,17 @@ fn parse_comment(input: &str) -> IResult<&str, Expression> {
     let (input, (_, _, comment)) = tuple((space0, tag("//"), take_till(|c| c == '\n' || c == '\r')))(input)?;
 
     Ok((input, Expression::Comment(comment.trim().to_owned())))
+}
+
+fn parse_numeric_literal(input: &str) -> IResult<&str, Expression> {
+    let (input, num) = delimited(multispace0, digit1, permutation((multispace0, many0(tag(";")), multispace0)))(input)?;
+
+    Ok((
+        input,
+        Expression::NumericLiteral(NumericLiteral {
+            value: num.parse::<usize>().unwrap(),
+        }),
+    ))
 }
 
 fn parse_assign(input: &str) -> IResult<&str, Expression> {
@@ -96,6 +107,7 @@ fn parse_arithmetic_expression_to_expr(input: &str) -> IResult<&str, Expression>
 fn parse_program(input: &str) -> IResult<&str, Vec<Expression>> {
     let (input, program) = many1(alt((
         parse_comment,
+        parse_numeric_literal,
         parse_assign,
         parse_call_expression,
         parse_arithmetic_expression_to_expr,
