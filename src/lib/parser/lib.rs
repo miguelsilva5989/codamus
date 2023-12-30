@@ -3,6 +3,7 @@ mod ast;
 mod generic;
 // mod lexer;
 
+use std::fmt::{self, Debug, Display, Formatter};
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_till, take_until},
@@ -19,6 +20,16 @@ use ast::{Assign, CallExpression, Expression};
 #[derive(Debug)]
 pub struct Program<'a> {
     pub body: Vec<Expression<'a>>,
+}
+
+impl Display for Program<'_> {
+    fn fmt(&self, format: &mut Formatter<'_>) -> fmt::Result {
+        write!(format, "Program:\n")?;
+        for v in &self.body {
+            write!(format, "\t{}\n", v)?;
+        }
+        Ok(())
+    }
 }
 
 fn parse_comment(input: &str) -> IResult<&str, Expression> {

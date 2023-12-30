@@ -7,7 +7,7 @@ fn main() {
     
     match program {
         Ok((rem, program)) => {
-            print!("program: {:?} - rem: '{}'", program, rem)
+            print!("{}\nremaining input: '{}'", program, rem)
         },
         Err(err) => panic!("error parsing ast: {:?}", err)
     }
