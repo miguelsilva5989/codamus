@@ -39,7 +39,7 @@ fn parse_comment(input: &str) -> IResult<&str, Expression> {
 }
 
 fn parse_numeric_literal(input: &str) -> IResult<&str, Expression> {
-    let (input, num) = delimited(multispace0, digit1, permutation((multispace0, many0(tag(";")), multispace0)))(input)?;
+    let (input, (_, num, _, _, _)) = tuple((multispace0, digit1, multispace0, tag(";"), multispace0))(input)?;
 
     Ok((
         input,
