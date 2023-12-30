@@ -11,22 +11,40 @@ pub enum Expression<'a> {
     Identifier(Identifier),
     NumericLiteral(NumericLiteral),
     Assign(Assign<'a>),
-    BinaryExpression(BinaryExpression<'a>),
+    ArithmeticExpression(ArithmeticExpression),
     CallExpression(CallExpression<'a>),
     NoneLiteral
     // UnaryExpression,
     // FunctionDeclaration,
 }
 
+#[derive(Debug)]
+pub enum Oper {
+  Add,
+  Sub,
+  Mul,
+  Div,
+  Mod,
+}
+
 // #[derive(Debug)]
-// struct Expression {}
+// pub struct ArithmeticExpression<'a> {
+//     pub left: Box<Expression<'a>>,
+//     pub right: Box<Expression<'a>>,
+//     pub operator: String,
+// }
 
 #[derive(Debug)]
-pub struct BinaryExpression<'a> {
-    pub left: Box<Expression<'a>>,
-    pub right: Box<Expression<'a>>,
-    pub operator: String,
-}
+pub enum ArithmeticExpression {
+    Value(i64),
+    Identifier(Identifier),
+    Add(Box<ArithmeticExpression>, Box<ArithmeticExpression>),
+    Sub(Box<ArithmeticExpression>, Box<ArithmeticExpression>),
+    Mul(Box<ArithmeticExpression>, Box<ArithmeticExpression>),
+    Div(Box<ArithmeticExpression>, Box<ArithmeticExpression>),
+    Mod(Box<ArithmeticExpression>, Box<ArithmeticExpression>),
+    Paren(Box<ArithmeticExpression>),
+  }
 
 #[derive(Debug)]
 pub struct CallExpression<'a> {
