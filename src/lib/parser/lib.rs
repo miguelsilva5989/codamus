@@ -1,25 +1,24 @@
 mod arithmetic;
 pub mod ast;
 mod generic;
-// mod lexer;
 
 use nom::{
-    branch::{alt, permutation},
+    branch::alt,
     bytes::complete::{tag, take_till, take_until},
     character::complete::{digit1, multispace0, space0},
-    multi::{many0, many1},
-    sequence::{delimited, tuple},
+    multi::many1,
+    sequence::tuple,
     IResult,
 };
 use std::fmt::{self, Debug, Display, Formatter};
 
 use arithmetic::parse_arithmetic_expression;
-use ast::{Assign, CallExpression, Expression, NumericLiteral};
+use ast::{Assign, CallExpression, Statement, NumericLiteral};
 // use lexer::{Token, TokenType};
 
 #[derive(Debug)]
 pub struct Program<'a> {
-    pub body: Vec<Expression<'a>>,
+    pub body: Vec<Statement<'a>>,
 }
 
 impl Display for Program<'_> {
@@ -32,24 +31,24 @@ impl Display for Program<'_> {
     }
 }
 
-fn parse_comment(input: &str) -> IResult<&str, Expression> {
+fn parse_comment(input: &str) -> IResult<&str, Statement> {
     let (input, (_, _, comment)) = tuple((space0, tag("//"), take_till(|c| c == '\n' || c == '\r')))(input)?;
 
-    Ok((input, Expression::Comment(comment.trim().to_owned())))
+    Ok((input, Statement::Comment(comment.trim().to_owned())))
 }
 
-fn parse_numeric_literal(input: &str) -> IResult<&str, Expression> {
+fn parse_numeric_literal(input: &str) -> IResult<&str, Statement> {
     let (input, (_, num, _, _, _)) = tuple((multispace0, digit1, multispace0, tag(";"), multispace0))(input)?;
 
     Ok((
         input,
-        Expression::NumericLiteral(NumericLiteral {
+        Statement::NumericLiteral(NumericLiteral {
             value: num.parse::<usize>().unwrap(),
         }),
     ))
 }
 
-fn parse_assign(input: &str) -> IResult<&str, Expression> {
+fn parse_assign(input: &str) -> IResult<&str, Statement> {
     let (input, (_, _, _, id, _, _, _, assign, _, _, _)) = tuple((
         multispace0,
         tag("let"),
@@ -68,14 +67,14 @@ fn parse_assign(input: &str) -> IResult<&str, Expression> {
 
     Ok((
         input,
-        Expression::Assign(Assign {
+        Statement::Assign(Assign {
             id,
             expression: Box::new(expression),
         }),
     ))
 }
 
-fn parse_call_expression(input: &str) -> IResult<&str, Expression> {
+fn parse_call_expression(input: &str) -> IResult<&str, Statement> {
     let (input, (_, func, _, _, _, args, _, _, _, _)) = tuple((
         multispace0,
         tag("print"),
@@ -91,20 +90,20 @@ fn parse_call_expression(input: &str) -> IResult<&str, Expression> {
 
     Ok((
         input,
-        Expression::CallExpression(CallExpression {
+        Statement::CallExpression(CallExpression {
             func,
             args: args.trim().split(",").into_iter().map(|x| x.trim()).collect(),
         }),
     ))
 }
 
-fn parse_arithmetic_expression_to_expr(input: &str) -> IResult<&str, Expression> {
+fn parse_arithmetic_expression_to_expr(input: &str) -> IResult<&str, Statement> {
     let (input, parsed) = parse_arithmetic_expression(input)?;
 
-    Ok((input, Expression::ArithmeticExpression(parsed)))
+    Ok((input, Statement::ArithmeticExpression(parsed)))
 }
 
-fn parse_program(input: &str) -> IResult<&str, Vec<Expression>> {
+fn parse_program(input: &str) -> IResult<&str, Vec<Statement>> {
     let (input, program) = many1(alt((
         parse_comment,
         parse_numeric_literal,
@@ -113,7 +112,7 @@ fn parse_program(input: &str) -> IResult<&str, Vec<Expression>> {
         parse_arithmetic_expression_to_expr,
     )))(input)?;
 
-    let statements: Vec<Expression> = program;
+    let statements: Vec<Statement> = program;
 
     Ok((input, statements))
 }

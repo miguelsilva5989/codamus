@@ -4,7 +4,7 @@ use std::fmt::{self, Debug, Display, Formatter};
 pub struct Assign<'a> {
     pub id: &'a str,
     // pub tokens: Vec<Token>,
-    pub expression: Box<Expression<'a>>,
+    pub expression: Box<Statement<'a>>,
 }
 
 impl Display for Assign<'_> {
@@ -14,7 +14,7 @@ impl Display for Assign<'_> {
 }
 
 #[derive(Debug)]
-pub enum Expression<'a> {
+pub enum Statement<'a> {
     Comment(String),
     Identifier(Identifier),
     NumericLiteral(NumericLiteral),
@@ -26,9 +26,9 @@ pub enum Expression<'a> {
     // FunctionDeclaration,
 }
 
-impl Display for Expression<'_> {
+impl Display for Statement<'_> {
     fn fmt(&self, format: &mut Formatter<'_>) -> fmt::Result {
-        use self::Expression::*;
+        use self::Statement::*;
         match *self {
             Comment(ref val) => write!(format, "Comment: \t\t{}", val),
             Identifier(ref val) => write!(format, "Identifier: \t{}", val),
@@ -50,7 +50,7 @@ pub enum Oper {
 }
 
 pub enum ArithmeticExpression {
-    Value(i64),
+    Value(usize),
     Identifier(Identifier),
     Add(Box<ArithmeticExpression>, Box<ArithmeticExpression>),
     Sub(Box<ArithmeticExpression>, Box<ArithmeticExpression>),
