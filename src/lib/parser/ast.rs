@@ -3,13 +3,13 @@ use std::fmt::{self, Debug, Display, Formatter};
 #[derive(Debug)]
 pub struct Assign<'a> {
     pub id: &'a str,
-    // pub tokens: Vec<Token>,
+    pub constant: bool,
     pub expression: Box<Statement<'a>>,
 }
 
 impl Display for Assign<'_> {
     fn fmt(&self, format: &mut Formatter<'_>) -> fmt::Result {
-        write!(format, "id: {}, expression: {}", self.id, self.expression)
+        write!(format, "id: {}, constant: {}, expression: {}", self.id, self.constant, self.expression)
     }
 }
 

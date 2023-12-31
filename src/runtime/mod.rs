@@ -2,7 +2,7 @@ pub mod environment;
 pub mod value_types;
 
 use parser::{
-    ast::{ArithmeticExpression, Oper, Statement, Identifier, Assign},
+    ast::{ArithmeticExpression, Assign, Identifier, Oper, Statement},
     Program,
 };
 
@@ -29,7 +29,6 @@ fn eval_left_right(env: &mut Environment, left: ArithmeticExpression, right: Ari
     let left = evaluate(env, Statement::ArithmeticExpression(left));
     let right = evaluate(env, Statement::ArithmeticExpression(right));
 
-
     if matches!(left.r#type, ValueType::Number(_)) && matches!(left.r#type, ValueType::Number(_)) {
         return RuntimeValue {
             r#type: evaluate_numeric_arithmetic_expression(left.r#type.into(), right.r#type.into(), operator),
@@ -41,7 +40,9 @@ fn eval_left_right(env: &mut Environment, left: ArithmeticExpression, right: Ari
 
 fn evaluate_arithmetic_expression(env: &mut Environment, expr: ArithmeticExpression) -> RuntimeValue {
     match expr {
-        ArithmeticExpression::Value(val) => RuntimeValue { r#type: ValueType::Number(val) },
+        ArithmeticExpression::Value(val) => RuntimeValue {
+            r#type: ValueType::Number(val),
+        },
         ArithmeticExpression::Identifier(id) => evaluate_identifier(env, id),
         ArithmeticExpression::Add(left, right) => eval_left_right(env, *left, *right, Oper::Add),
         ArithmeticExpression::Sub(left, right) => eval_left_right(env, *left, *right, Oper::Sub),
@@ -53,12 +54,12 @@ fn evaluate_arithmetic_expression(env: &mut Environment, expr: ArithmeticExpress
 }
 
 fn evaluate_identifier(env: &mut Environment, id: Identifier) -> RuntimeValue {
-    return env.lookup_var(id.id)
+    return env.lookup_var(id.id);
 }
 
 fn evaluate_declaration(env: &mut Environment, assign: Assign) -> RuntimeValue {
     let expr = evaluate(env, *assign.expression);
-    return env.declare_var(assign.id.to_owned(), expr);
+    return env.declare_var(assign.id.to_owned(), expr, assign.constant);
 }
 
 fn evaluate_assign(env: &mut Environment, assign: Assign) -> RuntimeValue {
@@ -69,7 +70,9 @@ fn evaluate_assign(env: &mut Environment, assign: Assign) -> RuntimeValue {
 fn evaluate(env: &mut Environment, ast_node: Statement) -> RuntimeValue {
     match ast_node {
         Statement::Comment(_) => RuntimeValue { r#type: ValueType::None },
-        Statement::BooleanLiteral(val) => RuntimeValue { r#type: ValueType::Bool(val) },
+        Statement::BooleanLiteral(val) => RuntimeValue {
+            r#type: ValueType::Bool(val),
+        },
         Statement::Identifier(id) => evaluate_identifier(env, id),
         Statement::NumericLiteral(val) => RuntimeValue {
             r#type: ValueType::Number(val.value),
@@ -78,7 +81,7 @@ fn evaluate(env: &mut Environment, ast_node: Statement) -> RuntimeValue {
         Statement::Assign(assign) => evaluate_assign(env, assign),
         Statement::ArithmeticExpression(expr) => evaluate_arithmetic_expression(env, expr),
         // Statement::CallExpression(_) => todo!(),
-        _ => todo!("need to implement AST node type: {}", ast_node),
+        _ => todo!("Need to implement AST node type evaluation: {}", ast_node),
     }
 }
 
@@ -88,10 +91,9 @@ pub fn evaluate_program(program: Program) -> RuntimeValue {
     let mut env = Environment::new(None);
 
     for statement in program.body {
-        println!("statement {}", statement);
+        println!("Statement {}", statement);
         last_evaluated = evaluate(&mut env, statement);
-        println!("- runtime value: {:?}", last_evaluated);
-        println!("  env {:?}", env);
+        println!("  - runtime value: {:?}", last_evaluated);
     }
 
     return last_evaluated;

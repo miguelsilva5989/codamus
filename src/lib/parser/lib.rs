@@ -67,9 +67,9 @@ fn parse_numeric_literal(input: &str) -> IResult<&str, Statement> {
 }
 
 fn parse_declaration(input: &str) -> IResult<&str, Statement> {
-    let (input, (_, _, _, id, _, _, _, assign, _, _, _)) = tuple((
+    let (input, (_, constant, _, id, _, _, _, assign, _, _, _)) = tuple((
         multispace0,
-        tag("let"),
+        alt((tag("let"), tag("const"))),
         multispace0,
         generic::get_identifier,
         multispace0,
@@ -81,14 +81,19 @@ fn parse_declaration(input: &str) -> IResult<&str, Statement> {
         multispace0,
     ))(input)?;
 
-    println!("{}", assign);
+    let constant = match constant {
+        "let" => false,
+        "const" => true,
+        _ => panic!("")
+    };
+
     let (_, expression) = alt((parse_boolean, parse_arithmetic_expression_to_expr))(assign)?;
-    println!("{}", expression);
 
     Ok((
         input,
         Statement::Declaration(Assign {
             id,
+            constant,
             expression: Box::new(expression),
         }),
     ))
@@ -107,14 +112,13 @@ fn parse_assign(input: &str) -> IResult<&str, Statement> {
         multispace0,
     ))(input)?;
 
-    println!("{}", assign);
     let (_, expression) = alt((parse_boolean, parse_arithmetic_expression_to_expr))(assign)?;
-    println!("{}", expression);
-
+    
     Ok((
         input,
         Statement::Assign(Assign {
             id,
+            constant: false,
             expression: Box::new(expression),
         }),
     ))

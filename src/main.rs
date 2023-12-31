@@ -9,7 +9,8 @@ fn main() {
     
     match program {
         Ok((rem, program)) => {
-            print!("{}\nremaining input: '{}'\n", program, rem);
+            print!("{}\n", program);
+            print!("remaining input: '{}'\n\n", rem);
 
             let _ = runtime::evaluate_program(program);
             // println!("runtime value: {:?}", runtime_val);
