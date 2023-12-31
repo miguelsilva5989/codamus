@@ -1,6 +1,8 @@
 pub mod environment;
 pub mod value_types;
 
+use std::collections::BTreeMap;
+
 use parser::{
     ast::{ArithmeticExpression, Assign, Identifier, Oper, Statement, Object},
     Program,
@@ -10,7 +12,7 @@ use value_types::ValueType;
 
 use self::environment::Environment;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct RuntimeValue {
     pub r#type: ValueType,
 }
@@ -57,8 +59,17 @@ fn evaluate_identifier(env: &mut Environment, id: Identifier) -> RuntimeValue {
     return env.lookup_var(id.id);
 }
 
-fn evaluate_object_literal(env: &mut Environment, id: Object) -> RuntimeValue {
-    todo!()
+fn evaluate_object_literal(env: &mut Environment, obj: Object) -> RuntimeValue {
+    let mut object: BTreeMap<String, RuntimeValue> = BTreeMap::new();
+    
+    for prop in obj.properties {
+        match prop.value {
+            Some(statement) => object.insert(prop.key.to_owned(), evaluate(env, *statement)),
+            None => object.insert(prop.key.to_owned(), env.lookup_var(prop.key.to_owned())),
+        };
+    }
+
+    RuntimeValue { r#type: ValueType::Object(object) }
 }
 
 fn evaluate_declaration(env: &mut Environment, assign: Assign) -> RuntimeValue {

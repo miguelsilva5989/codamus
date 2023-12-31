@@ -1,13 +1,11 @@
+let asd = 1;
+let foo = 5;
+
 const obj = {
     x: 4,
-    y: 20,
+    y: asd,
     foo,
     complex: {
         bar: true
     }
 };
-
-foo;
-LOTR;
-sauron;
-etc;

@@ -62,8 +62,8 @@ fn get_property_assignment(input: &str) -> IResult<&str, Statement> {
         tag(":"),
         multispace0,
         alt((
-            parse_boolean_literal,
-            parse_numeric_literal,
+            parse_boolean,
+            parse_numeric,
             parse_identifier,
             parse_arithmetic_expression_to_expr,
             parse_object,
@@ -114,6 +114,17 @@ fn parse_object(input: &str) -> IResult<&str, Statement> {
     }
 
     Ok((input, Statement::ObjectLiteral(Object { properties })))
+}
+
+fn parse_numeric(input: &str) -> IResult<&str, Statement> {
+    let (input, num) = digit1(input)?;
+
+    Ok((
+        input,
+        Statement::NumericLiteral(NumericLiteral {
+            value: num.parse::<f64>().unwrap(),
+        }),
+    ))
 }
 
 fn parse_numeric_literal(input: &str) -> IResult<&str, Statement> {
