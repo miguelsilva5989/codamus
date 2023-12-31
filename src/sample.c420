@@ -5,7 +5,7 @@ const obj = {
     complex: {
         bar: true
     }
-}
+};
 
 foo;
 LOTR;

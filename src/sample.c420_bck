@@ -26,3 +26,12 @@ z;
 const a = 0;
 
 print(x);
+
+const obj = {
+    x: 4,
+    y: 20,
+    foo,
+    complex: {
+        bar: true
+    }
+};

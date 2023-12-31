@@ -107,7 +107,11 @@ fn parse_object_properties(input: &str) -> IResult<&str, Vec<Property>> {
 fn parse_object(input: &str) -> IResult<&str, Statement> {
     let (input, obj) = delimited(tag("{"), generic::take_until_unbalanced('{', '}'), tag("}"))(input)?;
 
-    let (_, properties) = parse_object_properties(obj)?;
+    let (rem, properties) = parse_object_properties(obj)?;
+
+    if rem.len() > 0 {
+        panic!("Object remainder to be parsed: {}", rem);
+    }
 
     Ok((input, Statement::ObjectLiteral(Object { properties })))
 }
@@ -144,7 +148,11 @@ fn parse_declaration(input: &str) -> IResult<&str, Statement> {
         _ => panic!("unknown declaration expression '{}'", expression),
     };
 
-    let (_, expression) = alt((parse_boolean, parse_object, parse_arithmetic_expression_to_expr))(assign)?;
+    let (rem, expression) = alt((parse_boolean, parse_object, parse_arithmetic_expression_to_expr))(assign)?;
+
+    if rem.len() > 0 {
+        panic!("Input remainder to be parsed: {}", rem);
+    }
 
     Ok((
         input,
@@ -169,7 +177,11 @@ fn parse_assign(input: &str) -> IResult<&str, Statement> {
         multispace0,
     ))(input)?;
 
-    let (_, expression) = alt((parse_boolean, parse_object, parse_arithmetic_expression_to_expr))(assign)?;
+    let (rem, expression) = alt((parse_boolean, parse_object, parse_arithmetic_expression_to_expr))(assign)?;
+
+    if rem.len() > 0 {
+        panic!("Input remainder to be parsed: {}", rem);
+    }
 
     Ok((
         input,
