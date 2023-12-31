@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use super::RuntimeValue;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Environment {
     parent: Option<Box<Environment>>,
     variables: BTreeMap<String, RuntimeValue>,
@@ -16,19 +16,19 @@ impl Environment {
         }
     }
 
-    pub fn resolve(self, name: String) -> Environment {
+    pub fn resolve(&mut self, name: String) -> &mut Self {
         if self.variables.contains_key(&name) {
             return self;
         }
 
-        if let Some(parent) = self.parent {
+        if let Some(parent) = &mut self.parent {
             return parent.resolve(name);
         } else {
             panic!("Cannot resolve variable '{}' as it does not exist", name)
         }
     }
 
-    pub fn lookup_var(self, name: String) -> RuntimeValue {
+    pub fn lookup_var(&mut self, name: String) -> RuntimeValue {
         let env = self.resolve(name.clone());
         return env.variables.get(&name).unwrap().clone()
     }
@@ -42,8 +42,8 @@ impl Environment {
         return value;
     }
 
-    pub fn assign_var(self, name: String, value: RuntimeValue) -> RuntimeValue {
-        let mut env = self.resolve(name.clone());
+    pub fn assign_var(&mut self, name: String, value: RuntimeValue) -> RuntimeValue {
+        let env = self.resolve(name.clone());
         env.variables.entry(name).and_modify(|v| *v = value.clone());
         return value;
     }
