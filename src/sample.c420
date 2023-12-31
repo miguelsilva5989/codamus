@@ -1,28 +1,7 @@
-// comment test
-
-5;
-
-10 + 5;
-
-10 - 5 * 2;
-
-10 * 2;
-10 / 2;
-
-10 % 2;
-10 % 3;
-
 let x = 100;
-
-true;
-false;
-
 x;
-x - 500 / 3;
-x - 500;
-x / 2;
-
 let y = false;
+y;
 
 foo;
 LOTR;

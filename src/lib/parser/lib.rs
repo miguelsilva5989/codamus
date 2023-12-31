@@ -13,7 +13,7 @@ use nom::{
 use std::fmt::{self, Debug, Display, Formatter};
 
 use arithmetic::parse_arithmetic_expression;
-use ast::{Assign, CallExpression, NumericLiteral, Statement};
+use ast::{Assign, CallExpression, NumericLiteral, Statement, Identifier};
 // use lexer::{Token, TokenType};
 
 #[derive(Debug)]
@@ -35,6 +35,12 @@ fn parse_comment(input: &str) -> IResult<&str, Statement> {
     let (input, (_, _, comment)) = tuple((space0, tag("//"), take_till(|c| c == '\n' || c == '\r')))(input)?;
 
     Ok((input, Statement::Comment(comment.trim().to_owned())))
+}
+
+fn parse_identifier(input: &str) -> IResult<&str, Statement> {
+    let (input, (_, id, _, _, _)) = tuple((multispace0, generic::get_identifier, multispace0, tag(";"), multispace0))(input)?;
+
+    Ok((input, Statement::Identifier(Identifier { id: id.to_owned() })))
 }
 
 fn parse_boolean(input: &str) -> IResult<&str, Statement> {
@@ -122,6 +128,7 @@ fn parse_program(input: &str) -> IResult<&str, Vec<Statement>> {
         parse_comment,
         parse_boolean_literal,
         parse_numeric_literal,
+        parse_identifier,
         parse_assign,
         parse_call_expression,
         parse_arithmetic_expression_to_expr,
