@@ -50,7 +50,7 @@ pub enum Oper {
 }
 
 pub enum ArithmeticExpression {
-    Value(usize),
+    Value(f64),
     Identifier(Identifier),
     Add(Box<ArithmeticExpression>, Box<ArithmeticExpression>),
     Sub(Box<ArithmeticExpression>, Box<ArithmeticExpression>),
@@ -130,7 +130,7 @@ impl Debug for Identifier {
 }
 
 pub struct NumericLiteral {
-    pub value: usize,
+    pub value: f64,
 }
 
 impl Display for NumericLiteral {

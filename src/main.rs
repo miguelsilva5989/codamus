@@ -1,4 +1,5 @@
 use parser;
+use runtime::{RuntimeValue, value_types::ValueType};
 
 mod runtime;
 
@@ -6,13 +7,15 @@ fn main() {
     let input = include_str!("sample.c420");
 
     let program = parser::parse_ast(input);
-    let env = runtime::environment::Environment::new(None);
+    let mut env = runtime::environment::Environment::new(None);
+
+    env.declare_var("x".to_owned(), RuntimeValue {r#type: ValueType::Number(100.0)});
     
     match program {
         Ok((rem, program)) => {
             print!("{}\nremaining input: '{}'\n", program, rem);
 
-            let _ = runtime::evaluate_program(program, &env);
+            let _ = runtime::evaluate_program(program, env);
             // println!("runtime value: {:?}", runtime_val);
 
             // for expr in program.body {

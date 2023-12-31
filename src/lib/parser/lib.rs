@@ -43,7 +43,7 @@ fn parse_numeric_literal(input: &str) -> IResult<&str, Statement> {
     Ok((
         input,
         Statement::NumericLiteral(NumericLiteral {
-            value: num.parse::<usize>().unwrap(),
+            value: num.parse::<f64>().unwrap(),
         }),
     ))
 }

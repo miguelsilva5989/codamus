@@ -3,12 +3,12 @@ use std::ops::{Add, Div, Mul, Rem, Sub};
 #[derive(Debug, Clone, PartialEq)]
 pub enum ValueType {
     None,
-    Number(usize),
+    Number(f64),
 }
-impl Into<usize> for ValueType {
-    fn into(self) -> usize {
+impl Into<f64> for ValueType {
+    fn into(self) -> f64 {
         match self {
-            ValueType::None => 0,
+            ValueType::None => 0.0,
             ValueType::Number(x) => x,
         }
     }
@@ -20,7 +20,7 @@ impl Add for ValueType {
     fn add(self, other: Self) -> Self {
         match self {
             ValueType::None => ValueType::None,
-            ValueType::Number(x) => ValueType::Number(x + <ValueType as Into<usize>>::into(other)),
+            ValueType::Number(x) => ValueType::Number(x + <ValueType as Into<f64>>::into(other)),
         }
     }
 }
@@ -30,7 +30,7 @@ impl Sub for ValueType {
     fn sub(self, other: Self) -> Self {
         match self {
             ValueType::None => ValueType::None,
-            ValueType::Number(x) => ValueType::Number(x - <ValueType as Into<usize>>::into(other)),
+            ValueType::Number(x) => ValueType::Number(x - <ValueType as Into<f64>>::into(other)),
         }
     }
 }
@@ -40,7 +40,7 @@ impl Mul for ValueType {
     fn mul(self, other: Self) -> Self {
         match self {
             ValueType::None => ValueType::None,
-            ValueType::Number(x) => ValueType::Number(x * <ValueType as Into<usize>>::into(other)),
+            ValueType::Number(x) => ValueType::Number(x * <ValueType as Into<f64>>::into(other)),
         }
     }
 }
@@ -48,8 +48,8 @@ impl Div for ValueType {
     type Output = Self;
 
     fn div(self, other: Self) -> Self {
-        let other_val = <ValueType as Into<usize>>::into(other);
-        if other_val == 0 {
+        let other_val = <ValueType as Into<f64>>::into(other);
+        if other_val == 0.0 {
             panic!("Cannot divide by 0")
         }
         match self {
@@ -64,7 +64,7 @@ impl Rem for ValueType {
     fn rem(self, other: Self) -> Self {
         match self {
             ValueType::None => ValueType::None,
-            ValueType::Number(x) => ValueType::Number(x % <ValueType as Into<usize>>::into(other)),
+            ValueType::Number(x) => ValueType::Number(x % <ValueType as Into<f64>>::into(other)),
         }
     }
 }

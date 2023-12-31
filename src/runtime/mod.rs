@@ -1,8 +1,8 @@
 pub mod environment;
-mod value_types;
+pub mod value_types;
 
 use parser::{
-    ast::{ArithmeticExpression, Oper, Statement},
+    ast::{ArithmeticExpression, Oper, Statement, Identifier},
     Program,
 };
 
@@ -12,7 +12,7 @@ use self::environment::Environment;
 
 #[derive(Debug, Clone)]
 pub struct RuntimeValue {
-    r#type: ValueType,
+    pub r#type: ValueType,
 }
 
 fn evaluate_numeric_arithmetic_expression(left: ValueType, right: ValueType, operator: Oper) -> ValueType {
@@ -25,8 +25,8 @@ fn evaluate_numeric_arithmetic_expression(left: ValueType, right: ValueType, ope
     }
 }
 
-fn eval_left_right(env: &Environment, left: ArithmeticExpression, right: ArithmeticExpression, operator: Oper) -> RuntimeValue {
-    let left = evaluate(env, Statement::ArithmeticExpression(left));
+fn eval_left_right(env: Environment, left: ArithmeticExpression, right: ArithmeticExpression, operator: Oper) -> RuntimeValue {
+    let left = evaluate(env.clone(), Statement::ArithmeticExpression(left));
     let right = evaluate(env, Statement::ArithmeticExpression(right));
 
 
@@ -39,10 +39,10 @@ fn eval_left_right(env: &Environment, left: ArithmeticExpression, right: Arithme
     return RuntimeValue { r#type: ValueType::None };
 }
 
-fn evaluate_arithmetic_expression(env: &Environment, expr: ArithmeticExpression) -> RuntimeValue {
+fn evaluate_arithmetic_expression(env: Environment, expr: ArithmeticExpression) -> RuntimeValue {
     match expr {
         ArithmeticExpression::Value(val) => RuntimeValue { r#type: ValueType::Number(val) },
-        ArithmeticExpression::Identifier(_) => todo!(),
+        ArithmeticExpression::Identifier(id) => evaluate_identifier(env, id),
         ArithmeticExpression::Add(left, right) => eval_left_right(env, *left, *right, Oper::Add),
         ArithmeticExpression::Sub(left, right) => eval_left_right(env, *left, *right, Oper::Sub),
         ArithmeticExpression::Mul(left, right) => eval_left_right(env, *left, *right, Oper::Mul),
@@ -52,10 +52,14 @@ fn evaluate_arithmetic_expression(env: &Environment, expr: ArithmeticExpression)
     }
 }
 
-fn evaluate(env: &Environment, ast_node: Statement) -> RuntimeValue {
+fn evaluate_identifier(env: Environment, id: Identifier) -> RuntimeValue {
+    return env.lookup_var(id.id)
+}
+
+fn evaluate(env: Environment, ast_node: Statement) -> RuntimeValue {
     match ast_node {
         Statement::Comment(_) => RuntimeValue { r#type: ValueType::None },
-        // Statement::Identifier(_) => todo!(),
+        Statement::Identifier(id) => evaluate_identifier(env, id),
         Statement::NumericLiteral(val) => RuntimeValue {
             r#type: ValueType::Number(val.value),
         },
@@ -66,12 +70,12 @@ fn evaluate(env: &Environment, ast_node: Statement) -> RuntimeValue {
     }
 }
 
-pub fn evaluate_program(program: Program, env: &Environment) -> RuntimeValue {
+pub fn evaluate_program(program: Program, env: Environment) -> RuntimeValue {
     let mut last_evaluated = RuntimeValue { r#type: ValueType::None };
 
     for statement in program.body {
         println!("statement {}", statement);
-        last_evaluated = evaluate(env, statement);
+        last_evaluated = evaluate(env.clone(), statement);
         println!("- runtime value: {:?}", last_evaluated);
     }
 
