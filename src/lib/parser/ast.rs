@@ -16,6 +16,7 @@ impl Display for Assign<'_> {
 #[derive(Debug)]
 pub enum Statement<'a> {
     Comment(String),
+    BooleanLiteral(bool),
     Identifier(Identifier),
     NumericLiteral(NumericLiteral),
     Assign(Assign<'a>),
@@ -31,6 +32,7 @@ impl Display for Statement<'_> {
         use self::Statement::*;
         match *self {
             Comment(ref val) => write!(format, "Comment: \t\t{}", val),
+            BooleanLiteral(ref val) => write!(format, "Boolean Literal: \t{}", val),
             Identifier(ref val) => write!(format, "Identifier: \t{}", val),
             NumericLiteral(ref val) => write!(format, "Numeric Literal: \t{}", val),
             Assign(ref assign) => write!(format, "Assign: \t\t{}", assign),

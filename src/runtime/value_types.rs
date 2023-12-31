@@ -4,12 +4,14 @@ use std::ops::{Add, Div, Mul, Rem, Sub};
 pub enum ValueType {
     None,
     Number(f64),
+    Bool(bool),
 }
 impl Into<f64> for ValueType {
     fn into(self) -> f64 {
         match self {
             ValueType::None => 0.0,
             ValueType::Number(x) => x,
+            ValueType::Bool(_) => panic!("Bool cannot be cast into f64"),
         }
     }
 }
@@ -21,6 +23,7 @@ impl Add for ValueType {
         match self {
             ValueType::None => ValueType::None,
             ValueType::Number(x) => ValueType::Number(x + <ValueType as Into<f64>>::into(other)),
+            ValueType::Bool(val) => panic!("Cannot Add bool '{val}' with number")
         }
     }
 }
@@ -31,6 +34,7 @@ impl Sub for ValueType {
         match self {
             ValueType::None => ValueType::None,
             ValueType::Number(x) => ValueType::Number(x - <ValueType as Into<f64>>::into(other)),
+            ValueType::Bool(val) => panic!("Cannot Subract bool '{val}' with number")
         }
     }
 }
@@ -41,6 +45,7 @@ impl Mul for ValueType {
         match self {
             ValueType::None => ValueType::None,
             ValueType::Number(x) => ValueType::Number(x * <ValueType as Into<f64>>::into(other)),
+            ValueType::Bool(val) => panic!("Cannot Multiply bool '{val}' with number")
         }
     }
 }
@@ -55,6 +60,7 @@ impl Div for ValueType {
         match self {
             ValueType::None => ValueType::None,
             ValueType::Number(x) => ValueType::Number(x / other_val),
+            ValueType::Bool(val) => panic!("Cannot Divide bool '{val}' with number")
         }
     }
 }
@@ -65,6 +71,7 @@ impl Rem for ValueType {
         match self {
             ValueType::None => ValueType::None,
             ValueType::Number(x) => ValueType::Number(x % <ValueType as Into<f64>>::into(other)),
+            ValueType::Bool(val) => panic!("Cannot Mod bool '{val}' with number")
         }
     }
 }

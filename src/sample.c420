@@ -14,10 +14,15 @@
 
 let x = 100;
 
+true;
+false;
+
 x;
 x - 500 / 3;
 x - 500;
 x / 2;
+
+let y = false;
 
 foo;
 LOTR;

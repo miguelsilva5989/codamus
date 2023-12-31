@@ -64,6 +64,7 @@ fn evaluate_assignment(env: &mut Environment, assign: Assign) -> RuntimeValue {
 fn evaluate(env: &mut Environment, ast_node: Statement) -> RuntimeValue {
     match ast_node {
         Statement::Comment(_) => RuntimeValue { r#type: ValueType::None },
+        Statement::BooleanLiteral(val) => RuntimeValue { r#type: ValueType::Bool(val) },
         Statement::Identifier(id) => evaluate_identifier(env, id),
         Statement::NumericLiteral(val) => RuntimeValue {
             r#type: ValueType::Number(val.value),
