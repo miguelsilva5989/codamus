@@ -2,7 +2,7 @@ pub mod environment;
 pub mod value_types;
 
 use parser::{
-    ast::{ArithmeticExpression, Assign, Identifier, Oper, Statement},
+    ast::{ArithmeticExpression, Assign, Identifier, Oper, Statement, Object},
     Program,
 };
 
@@ -57,6 +57,10 @@ fn evaluate_identifier(env: &mut Environment, id: Identifier) -> RuntimeValue {
     return env.lookup_var(id.id);
 }
 
+fn evaluate_object_literal(env: &mut Environment, id: Object) -> RuntimeValue {
+    todo!()
+}
+
 fn evaluate_declaration(env: &mut Environment, assign: Assign) -> RuntimeValue {
     let expr = evaluate(env, *assign.expression);
     return env.declare_var(assign.id.to_owned(), expr, assign.constant);
@@ -77,6 +81,7 @@ fn evaluate(env: &mut Environment, ast_node: Statement) -> RuntimeValue {
         Statement::NumericLiteral(val) => RuntimeValue {
             r#type: ValueType::Number(val.value),
         },
+        Statement::ObjectLiteral(val) => evaluate_object_literal(env, val),
         Statement::Declaration(assign) => evaluate_declaration(env, assign),
         Statement::Assign(assign) => evaluate_assign(env, assign),
         Statement::ArithmeticExpression(expr) => evaluate_arithmetic_expression(env, expr),

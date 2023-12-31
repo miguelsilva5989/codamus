@@ -16,4 +16,13 @@ let mod_test = 10 % 2 - 3;
 
 let x = 45 - 5 * (2 / bar_ze);
 
+let x = 100;
+let y = false;
+let z = x + 1;
+z;
+z = 0;
+z;
+
+const a = 0;
+
 print(x);

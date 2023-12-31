@@ -23,6 +23,8 @@ pub enum Statement<'a> {
     Assign(Assign<'a>),
     ArithmeticExpression(ArithmeticExpression),
     CallExpression(CallExpression<'a>),
+    ObjectLiteral(Object<'a>),
+    Property(Property<'a>),
     // NoneLiteral,
     // UnaryExpression,
     // FunctionDeclaration,
@@ -40,6 +42,8 @@ impl Display for Statement<'_> {
             Assign(ref assign) => write!(format, "Assign: \t\t{}", assign),
             ArithmeticExpression(ref expr) => write!(format, "Arithmetic Expression:  {}", expr),
             CallExpression(ref call) => write!(format, "Call Expression: \t{}", call),
+            ObjectLiteral(ref val) => write!(format, "Object Literal: \t{}", val),
+            Property(ref val) => write!(format, "Property: \t\t{}", val),
         }
     }
 }
@@ -114,6 +118,35 @@ impl Display for CallExpression<'_> {
             }
         }
         write!(format, ")")
+    }
+}
+
+#[derive(Debug)]
+pub struct Property<'a> {
+    pub key: &'a str,
+    pub value: Option<Box<Statement<'a>>>,
+}
+impl Display for Property<'_> {
+    fn fmt(&self, format: &mut Formatter<'_>) -> fmt::Result {
+        if let Some(val) = &self.value {
+            write!(format, "key: {} - value: {}", self.key, val)
+        } else {
+            write!(format, "key: {} - no value", self.key)
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct Object<'a> {
+    pub properties: Vec<Property<'a>>,
+}
+impl Display for Object<'_> {
+    fn fmt(&self, format: &mut Formatter<'_>) -> fmt::Result {
+        write!(format, "{{\n")?;
+        for v in &self.properties {
+            write!(format, "\t{}\n", v)?;
+        }
+        write!(format, "}}")
     }
 }
 

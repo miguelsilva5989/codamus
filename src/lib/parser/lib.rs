@@ -2,18 +2,20 @@ mod arithmetic;
 pub mod ast;
 mod generic;
 
+use generic::get_identifier;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_till, take_until},
     character::complete::{digit1, multispace0, space0},
-    multi::many1,
-    sequence::tuple,
+    combinator::opt,
+    multi::{many0, many1},
+    sequence::{delimited, tuple},
     IResult,
 };
 use std::fmt::{self, Debug, Display, Formatter};
 
 use arithmetic::parse_arithmetic_expression;
-use ast::{Assign, CallExpression, Identifier, NumericLiteral, Statement};
+use ast::{Assign, CallExpression, Identifier, NumericLiteral, Object, Property, Statement};
 // use lexer::{Token, TokenType};
 
 #[derive(Debug)]
@@ -55,6 +57,61 @@ fn parse_boolean_literal(input: &str) -> IResult<&str, Statement> {
     Ok((input, Statement::BooleanLiteral(boolean.parse::<bool>().unwrap())))
 }
 
+fn get_property_assignment(input: &str) -> IResult<&str, Statement> {
+    let (input, (_, _, statement, _)) = tuple((
+        tag(":"),
+        multispace0,
+        alt((
+            parse_boolean_literal,
+            parse_numeric_literal,
+            parse_identifier,
+            parse_arithmetic_expression_to_expr,
+            parse_object,
+        )),
+        multispace0,
+    ))(input)?;
+
+    Ok((input, statement))
+}
+
+fn parse_object_property(input: &str) -> IResult<&str, Property> {
+    let (input, (_, key, _, statement, _, _, _)) = tuple((
+        multispace0,
+        get_identifier,
+        multispace0,
+        opt(get_property_assignment),
+        multispace0,
+        opt(tag(",")),
+        multispace0,
+    ))(input)?;
+
+    if let Some(stat) = statement {
+        return Ok((
+            input,
+            Property {
+                key,
+                value: Some(Box::new(stat)),
+            },
+        ));
+    }
+
+    return Ok((input, Property { key, value: None }));
+}
+
+fn parse_object_properties(input: &str) -> IResult<&str, Vec<Property>> {
+    let (input, (_, properties, _)) = tuple((multispace0, many0(parse_object_property), multispace0))(input)?;
+
+    Ok((input, properties))
+}
+
+fn parse_object(input: &str) -> IResult<&str, Statement> {
+    let (input, obj) = delimited(tag("{"), generic::take_until_unbalanced('{', '}'), tag("}"))(input)?;
+
+    let (_, properties) = parse_object_properties(obj)?;
+
+    Ok((input, Statement::ObjectLiteral(Object { properties })))
+}
+
 fn parse_numeric_literal(input: &str) -> IResult<&str, Statement> {
     let (input, (_, num, _, _, _)) = tuple((multispace0, digit1, multispace0, tag(";"), multispace0))(input)?;
 
@@ -87,7 +144,7 @@ fn parse_declaration(input: &str) -> IResult<&str, Statement> {
         _ => panic!("unknown declaration expression '{}'", expression),
     };
 
-    let (_, expression) = alt((parse_boolean, parse_arithmetic_expression_to_expr))(assign)?;
+    let (_, expression) = alt((parse_boolean, parse_object, parse_arithmetic_expression_to_expr))(assign)?;
 
     Ok((
         input,
@@ -112,7 +169,7 @@ fn parse_assign(input: &str) -> IResult<&str, Statement> {
         multispace0,
     ))(input)?;
 
-    let (_, expression) = alt((parse_boolean, parse_arithmetic_expression_to_expr))(assign)?;
+    let (_, expression) = alt((parse_boolean, parse_object, parse_arithmetic_expression_to_expr))(assign)?;
 
     Ok((
         input,
