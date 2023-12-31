@@ -2,6 +2,10 @@ let x = 100;
 x;
 let y = false;
 y;
+let z = x + 1;
+z;
+z = 0;
+z;
 
 foo;
 LOTR;

@@ -13,7 +13,7 @@ use nom::{
 use std::fmt::{self, Debug, Display, Formatter};
 
 use arithmetic::parse_arithmetic_expression;
-use ast::{Assign, CallExpression, NumericLiteral, Statement, Identifier};
+use ast::{Assign, CallExpression, Identifier, NumericLiteral, Statement};
 // use lexer::{Token, TokenType};
 
 #[derive(Debug)]
@@ -66,10 +66,36 @@ fn parse_numeric_literal(input: &str) -> IResult<&str, Statement> {
     ))
 }
 
-fn parse_assign(input: &str) -> IResult<&str, Statement> {
+fn parse_declaration(input: &str) -> IResult<&str, Statement> {
     let (input, (_, _, _, id, _, _, _, assign, _, _, _)) = tuple((
         multispace0,
         tag("let"),
+        multispace0,
+        generic::get_identifier,
+        multispace0,
+        tag("="),
+        multispace0,
+        take_until(";"),
+        multispace0,
+        tag(";"),
+        multispace0,
+    ))(input)?;
+
+    println!("{}", assign);
+    let (_, expression) = alt((parse_boolean, parse_arithmetic_expression_to_expr))(assign)?;
+    println!("{}", expression);
+
+    Ok((
+        input,
+        Statement::Declaration(Assign {
+            id,
+            expression: Box::new(expression),
+        }),
+    ))
+}
+
+fn parse_assign(input: &str) -> IResult<&str, Statement> {
+    let (input, (_, id, _, _, _, assign, _, _, _)) = tuple((
         multispace0,
         generic::get_identifier,
         multispace0,
@@ -129,6 +155,7 @@ fn parse_program(input: &str) -> IResult<&str, Vec<Statement>> {
         parse_boolean_literal,
         parse_numeric_literal,
         parse_identifier,
+        parse_declaration,
         parse_assign,
         parse_call_expression,
         parse_arithmetic_expression_to_expr,

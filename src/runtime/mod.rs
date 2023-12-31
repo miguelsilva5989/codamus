@@ -56,9 +56,14 @@ fn evaluate_identifier(env: &mut Environment, id: Identifier) -> RuntimeValue {
     return env.lookup_var(id.id)
 }
 
-fn evaluate_assignment(env: &mut Environment, assign: Assign) -> RuntimeValue {
+fn evaluate_declaration(env: &mut Environment, assign: Assign) -> RuntimeValue {
     let expr = evaluate(env, *assign.expression);
     return env.declare_var(assign.id.to_owned(), expr);
+}
+
+fn evaluate_assign(env: &mut Environment, assign: Assign) -> RuntimeValue {
+    let expr = evaluate(env, *assign.expression);
+    return env.assign_var(assign.id.to_owned(), expr);
 }
 
 fn evaluate(env: &mut Environment, ast_node: Statement) -> RuntimeValue {
@@ -69,7 +74,8 @@ fn evaluate(env: &mut Environment, ast_node: Statement) -> RuntimeValue {
         Statement::NumericLiteral(val) => RuntimeValue {
             r#type: ValueType::Number(val.value),
         },
-        Statement::Assign(assign) => evaluate_assignment(env, assign),
+        Statement::Declaration(assign) => evaluate_declaration(env, assign),
+        Statement::Assign(assign) => evaluate_assign(env, assign),
         Statement::ArithmeticExpression(expr) => evaluate_arithmetic_expression(env, expr),
         // Statement::CallExpression(_) => todo!(),
         _ => todo!("need to implement AST node type: {}", ast_node),
