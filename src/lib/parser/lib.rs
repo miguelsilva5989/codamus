@@ -67,7 +67,7 @@ fn parse_numeric_literal(input: &str) -> IResult<&str, Statement> {
 }
 
 fn parse_declaration(input: &str) -> IResult<&str, Statement> {
-    let (input, (_, constant, _, id, _, _, _, assign, _, _, _)) = tuple((
+    let (input, (_, expression, _, id, _, _, _, assign, _, _, _)) = tuple((
         multispace0,
         alt((tag("let"), tag("const"))),
         multispace0,
@@ -81,10 +81,10 @@ fn parse_declaration(input: &str) -> IResult<&str, Statement> {
         multispace0,
     ))(input)?;
 
-    let constant = match constant {
+    let constant = match expression {
         "let" => false,
         "const" => true,
-        _ => panic!("")
+        _ => panic!("unknown declaration expression '{}'", expression),
     };
 
     let (_, expression) = alt((parse_boolean, parse_arithmetic_expression_to_expr))(assign)?;
@@ -113,7 +113,7 @@ fn parse_assign(input: &str) -> IResult<&str, Statement> {
     ))(input)?;
 
     let (_, expression) = alt((parse_boolean, parse_arithmetic_expression_to_expr))(assign)?;
-    
+
     Ok((
         input,
         Statement::Assign(Assign {
