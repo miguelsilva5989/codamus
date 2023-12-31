@@ -6,12 +6,13 @@ fn main() {
     let input = include_str!("sample.c420");
 
     let program = parser::parse_ast(input);
+    let env = runtime::environment::Environment::new(None);
     
     match program {
         Ok((rem, program)) => {
             print!("{}\nremaining input: '{}'\n", program, rem);
 
-            let _ = runtime::evaluate_program(program);
+            let _ = runtime::evaluate_program(program, &env);
             // println!("runtime value: {:?}", runtime_val);
 
             // for expr in program.body {
