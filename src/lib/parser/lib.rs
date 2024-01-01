@@ -54,17 +54,17 @@ fn parse_call_member_expression_literal(input: &str) -> IResult<&str, Statement>
     Ok((input, stat))
 }
 
-fn parse_member_expression(input: &str) -> IResult<&str, Statement> {
-    let (_, members) = separated_list1(tag("."), get_identifier)(input)?;
+// fn parse_member_expression(input: &str) -> IResult<&str, Statement> {
+//     let (_, members) = separated_list1(tag("."), get_identifier)(input)?;
 
-    Ok((input, Statement::MemberExpression(MemberExpression { object: "", property: "" })))
-}
+//     Ok((input, Statement::MemberExpression(MemberExpression { object: "", property: "" })))
+// }
 
-fn parse_member_expression_literal(input: &str) -> IResult<&str, Statement> {
-    let (input, (_, stat, _, _, _)) = tuple((multispace0, parse_member_expression, multispace0, tag(";"), multispace0))(input)?;
+// fn parse_member_expression_literal(input: &str) -> IResult<&str, Statement> {
+//     let (input, (_, stat, _, _, _)) = tuple((multispace0, parse_member_expression, multispace0, tag(";"), multispace0))(input)?;
 
-    Ok((input, stat))
-}
+//     Ok((input, stat))
+// }
 
 fn parse_identifier(input: &str) -> IResult<&str, Statement> {
     let (input, (_, id, _, _, _)) = tuple((multispace0, generic::get_identifier, multispace0, tag(";"), multispace0))(input)?;
@@ -190,7 +190,7 @@ fn parse_declaration(input: &str) -> IResult<&str, Statement> {
         parse_boolean,
         parse_object,
         parse_arithmetic_expression_to_expr,
-        parse_member_expression,
+        // parse_member_expression,
         parse_call_member_expression,
     ))(assign)?;
 
@@ -225,7 +225,7 @@ fn parse_assign(input: &str) -> IResult<&str, Statement> {
         parse_boolean,
         parse_object,
         parse_arithmetic_expression_to_expr,
-        parse_member_expression,
+        // parse_member_expression,
         parse_call_member_expression,
     ))(assign)?;
 
@@ -281,7 +281,7 @@ fn parse_program(input: &str) -> IResult<&str, Vec<Statement>> {
         parse_declaration,
         parse_assign,
         parse_call_expression,
-        parse_member_expression_literal,
+        // parse_member_expression_literal,
         parse_call_member_expression_literal,
         parse_arithmetic_expression_to_expr,
     )))(input)?;

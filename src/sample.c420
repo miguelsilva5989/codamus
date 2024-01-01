@@ -1,7 +1,6 @@
-// comment test
+// this is a comment
 
 5;
-
 10 + 5;
 
 let asd = 10 + 5 - 5;
@@ -30,6 +29,3 @@ const obj = {
         bar: true
     }
 };
-
-obj["x"];
-let ze = obj["y"];
