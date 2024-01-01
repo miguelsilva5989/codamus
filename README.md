@@ -1,7 +1,10 @@
 # Codamus Lang
 
 My first take on creating a simple programming language in Rust.
+
 Is uses [Nom](https://github.com/rust-bakery/nom) for parsing and creating the AST.
+
+Currently this is only an interpreted language and does not support many features.
 
 ## References
 
@@ -11,9 +14,15 @@ Based on the youtube series "Programming Language From Scratch" in TypeScript by
 
 This language is unfinished and not suited for the real world!
 
-## Current Features: 
+## Current parser supported features: 
 - literals: `5;`, `false;`, `1 + 2;`
-- declarations statements: `let x = 32;`, `const x = 32;`
+- arithmetic expressions: `45 - 5 * (2 / bar_ze);`
+- declarations statements: `let x = 32;`, `const x = 32;`, `const obj = {x: 4, foo, complex: {bar: true}}`
+- print statements: `print(x);`
+
+## Current runtime supported features: 
+- literals: `5;`, `false;`, `1 + 2;`
+- declarations statements: `let x = 32;`, `const x = 32;`, `const obj = {x: 4, foo, complex: {bar: true}}`
 
 ## Example
 
