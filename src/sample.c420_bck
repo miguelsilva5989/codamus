@@ -3,7 +3,6 @@
 5;
 
 10 + 5;
-10 + (5 - 2);
 
 let asd = 10 + 5 - 5;
 
@@ -35,3 +34,9 @@ const obj = {
         bar: true
     }
 };
+
+obj["x"];
+obj.foo;
+let f = obj.complex.bar;
+foo = obj.y + 5;
+let ze = obj["y"];

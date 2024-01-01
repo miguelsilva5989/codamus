@@ -25,6 +25,7 @@ pub enum Statement<'a> {
     CallExpression(CallExpression<'a>),
     ObjectLiteral(Object<'a>),
     Property(Property<'a>),
+    MemberExpression(MemberExpression<'a>),
     // NoneLiteral,
     // UnaryExpression,
     // FunctionDeclaration,
@@ -44,6 +45,7 @@ impl Display for Statement<'_> {
             CallExpression(ref call) => write!(format, "Call Expression: \t{}", call),
             ObjectLiteral(ref val) => write!(format, "Object Literal: \t{}", val),
             Property(ref val) => write!(format, "Property: \t\t{}", val),
+            MemberExpression(ref val) => write!(format, "Member Expression: \t{}", val),
         }
     }
 }
@@ -118,6 +120,17 @@ impl Display for CallExpression<'_> {
             }
         }
         write!(format, ")")
+    }
+}
+
+#[derive(Debug)]
+pub struct MemberExpression<'a> {
+    pub object: &'a str,
+    pub property: &'a str,
+}
+impl Display for MemberExpression<'_> {
+    fn fmt(&self, format: &mut Formatter<'_>) -> fmt::Result {
+        write!(format, "object: {} - property: {}", self.object, self.property)
     }
 }
 

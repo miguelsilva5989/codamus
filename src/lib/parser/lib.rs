@@ -8,14 +8,14 @@ use nom::{
     bytes::complete::{tag, take_till, take_until},
     character::complete::{digit1, multispace0, space0},
     combinator::opt,
-    multi::{many0, many1},
+    multi::{many0, separated_list1},
     sequence::{delimited, tuple},
     IResult,
 };
 use std::fmt::{self, Debug, Display, Formatter};
 
 use arithmetic::parse_arithmetic_expression;
-use ast::{Assign, CallExpression, Identifier, NumericLiteral, Object, Property, Statement};
+use ast::{Assign, CallExpression, Identifier, MemberExpression, NumericLiteral, Object, Property, Statement};
 // use lexer::{Token, TokenType};
 
 #[derive(Debug)]
@@ -37,6 +37,33 @@ fn parse_comment(input: &str) -> IResult<&str, Statement> {
     let (input, (_, _, comment)) = tuple((space0, tag("//"), take_till(|c| c == '\n' || c == '\r')))(input)?;
 
     Ok((input, Statement::Comment(comment.trim().to_owned())))
+}
+
+fn parse_call_member_expression(input: &str) -> IResult<&str, Statement> {
+    let (input, (object, property)) = tuple((
+        generic::get_identifier,
+        delimited(tag("["), delimited(tag("\""), get_identifier, tag("\"")), tag("]")),
+    ))(input)?;
+
+    Ok((input, Statement::MemberExpression(MemberExpression { object, property })))
+}
+
+fn parse_call_member_expression_literal(input: &str) -> IResult<&str, Statement> {
+    let (input, (_, stat, _, _, _)) = tuple((multispace0, parse_call_member_expression, multispace0, tag(";"), multispace0))(input)?;
+
+    Ok((input, stat))
+}
+
+fn parse_member_expression(input: &str) -> IResult<&str, Statement> {
+    let (_, members) = separated_list1(tag("."), get_identifier)(input)?;
+
+    Ok((input, Statement::MemberExpression(MemberExpression { object: "", property: "" })))
+}
+
+fn parse_member_expression_literal(input: &str) -> IResult<&str, Statement> {
+    let (input, (_, stat, _, _, _)) = tuple((multispace0, parse_member_expression, multispace0, tag(";"), multispace0))(input)?;
+
+    Ok((input, stat))
 }
 
 fn parse_identifier(input: &str) -> IResult<&str, Statement> {
@@ -159,7 +186,13 @@ fn parse_declaration(input: &str) -> IResult<&str, Statement> {
         _ => panic!("unknown declaration expression '{}'", expression),
     };
 
-    let (rem, expression) = alt((parse_boolean, parse_object, parse_arithmetic_expression_to_expr))(assign)?;
+    let (rem, expression) = alt((
+        parse_boolean,
+        parse_object,
+        parse_arithmetic_expression_to_expr,
+        parse_member_expression,
+        parse_call_member_expression,
+    ))(assign)?;
 
     if rem.len() > 0 {
         panic!("Input remainder to be parsed: {}", rem);
@@ -188,7 +221,13 @@ fn parse_assign(input: &str) -> IResult<&str, Statement> {
         multispace0,
     ))(input)?;
 
-    let (rem, expression) = alt((parse_boolean, parse_object, parse_arithmetic_expression_to_expr))(assign)?;
+    let (rem, expression) = alt((
+        parse_boolean,
+        parse_object,
+        parse_arithmetic_expression_to_expr,
+        parse_member_expression,
+        parse_call_member_expression,
+    ))(assign)?;
 
     if rem.len() > 0 {
         panic!("Input remainder to be parsed: {}", rem);
@@ -234,7 +273,7 @@ fn parse_arithmetic_expression_to_expr(input: &str) -> IResult<&str, Statement> 
 }
 
 fn parse_program(input: &str) -> IResult<&str, Vec<Statement>> {
-    let (input, program) = many1(alt((
+    let (input, program) = many0(alt((
         parse_comment,
         parse_boolean_literal,
         parse_numeric_literal,
@@ -242,6 +281,8 @@ fn parse_program(input: &str) -> IResult<&str, Vec<Statement>> {
         parse_declaration,
         parse_assign,
         parse_call_expression,
+        parse_member_expression_literal,
+        parse_call_member_expression_literal,
         parse_arithmetic_expression_to_expr,
     )))(input)?;
 
@@ -254,6 +295,10 @@ pub fn parse_ast(input: &str) -> IResult<&str, Program> {
     let (input, statements) = parse_program(input)?;
 
     let program = Program { body: statements };
+
+    if input.len() > 0 {
+        panic!("Input remainder to be parsed: {}", input);
+    }
 
     Ok((input, program))
 }

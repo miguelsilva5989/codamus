@@ -1,11 +1,35 @@
-let asd = 1;
-let foo = 5;
+// comment test
+
+5;
+
+10 + 5;
+
+let asd = 10 + 5 - 5;
+
+let foo = 1;
+let bar_ze = 2;
+
+let sum_test = 10 - foo + bar_ze;
+let mul_test = 10 + 5 * 3;
+let mod_test = 10 % 2 - 3;
+
+let x = 100;
+let y = false;
+let z = x + 1;
+z;
+z = 0;
+z;
+
+const a = 0;
 
 const obj = {
     x: 4,
-    y: asd,
+    y: 20,
     foo,
     complex: {
         bar: true
     }
 };
+
+obj["x"];
+let ze = obj["y"];
